@@ -9,6 +9,7 @@
 OOP - Ex4
 Very simple GUI example for python client to communicates with the server and "play the game!"
 """
+import random
 from types import SimpleNamespace
 from client import Client
 import json
@@ -25,7 +26,7 @@ WIDTH, HEIGHT = 1080, 720
 PORT = 6666
 # server host (default localhost 127.0.0.1)
 HOST = '127.0.0.1'
-#HOST='109.67.185.130'
+# HOST='109.67.185.130'
 pygame.init()
 
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
@@ -36,7 +37,28 @@ client = Client()
 client.start_connection(HOST, PORT)
 
 pokemons = client.get_pokemons()
-pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
+
+
+def get_pokemons(pokemons):
+    J = json.loads(pokemons)
+    ListPokemon = J['pokemon']
+    for n in ListPokemon:
+        try:
+            value = n['value']
+            type = n['type']
+            pos = n['pos']
+            pos = tuple(pos.split(','))
+
+        except Exception:
+            x = random.uniform(35.19, 35.22)
+            y = random.uniform(32.05, 32.22)
+            pos = (x, y, 0.0)
+            type = 0
+            value = 0
+    return ListPokemon
+
+
+# pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
 print(pokemons)
 
@@ -52,7 +74,7 @@ for n in graph.Nodes:
     x, y, _ = n.pos.split(',')
     n.pos = SimpleNamespace(x=float(x), y=float(y))
 
- # get data proportions
+# get data proportions
 min_x = min(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
 min_y = min(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
 max_x = max(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
@@ -64,7 +86,7 @@ def scale(data, min_screen, max_screen, min_data, max_data):
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
     """
-    return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
+    return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
@@ -73,7 +95,7 @@ def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
-        return scale(data, 50, screen.get_height()-50, min_y, max_y)
+        return scale(data, 50, screen.get_height() - 50, min_y, max_y)
 
 
 radius = 15
@@ -163,10 +185,9 @@ while client.is_running() == 'true':
 
     # choose next edge
     for agent in agents:
-        graphString=client.get_graph()
-        myGraph=GraphAlgo()
+        graphString = client.get_graph()
+        myGraph = GraphAlgo()
         myGraph.load_from_string(graphString)
-
 
         # if agent.dest == -1:
         #     next_node = (agent.src - 1) % len(graph.Nodes)

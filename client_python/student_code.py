@@ -57,6 +57,7 @@ def scale(data, min_screen, max_screen, min_data, max_data):
     """
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
+
     """
     return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
 
