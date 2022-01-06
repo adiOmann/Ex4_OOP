@@ -52,32 +52,33 @@ class GraphAlgo(GraphAlgoInterface):
         self.graph = g
         return True
 
-    def load_from_string_json(self, guistr:str) -> bool:
-        #with open(string, 'r') as file:
-        J = json.loads(guistr)
-        ListNode = J['Nodes']
-        ListEdge = J['Edges']
-        g = DiGraph()
-        for n in ListNode:
-            try:
-                pos = n['pos']
-                pos = tuple(pos.split(','))
-
-            except Exception:
-                x = random.uniform(35.19, 35.22)
-                y = random.uniform(32.05, 32.22)
-                pos = (x, y, 0.0)
-            no = Node(Id=n['id'], pos=pos)
-            i = no.get_id()
-            g.add_node(i, pos)
-            # self.graph.add_node(n['id'], pos)
-
-        for e in ListEdge:
-            ed = Edge(src=e['src'], dest=e["dest"], weight=e['w'])
-            s = ed.getSrc()
-            d = ed.getDest()
-            w = ed.getWeight()
-            g.add_edge(s, d, w)
+    # def load_from_string_json(self, guistr:str) -> bool:
+    #     #with open(string, 'r') as file:
+    #     J = json.loads(guistr)
+    #     ListNode = J['Nodes']
+    #     ListEdge = J['Edges']
+    #     g = DiGraph()
+    #     for n in ListNode:
+    #         try:
+    #             pos = n['pos']
+    #             pos = tuple(pos.split(','))
+    #
+    #         except Exception:
+    #             x = random.uniform(35.19, 35.22)
+    #             y = random.uniform(32.05, 32.22)
+    #             pos = (x, y, 0.0)
+    #         no = Node(Id=n['id'], pos=pos)
+    #         i = no.get_id()
+        
+    #         g.add_node(i, pos)
+    #         # self.graph.add_node(n['id'], pos)
+    #
+    #     for e in ListEdge:
+    #         ed = Edge(src=e['src'], dest=e["dest"], weight=e['w'])
+    #         s = ed.getSrc()
+    #         d = ed.getDest()
+    #         w = ed.getWeight()
+    #         g.add_edge(s, d, w)
 
         self.graph = g
         return True
