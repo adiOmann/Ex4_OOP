@@ -1,6 +1,11 @@
 import random
+
 from types import SimpleNamespace
 from client import Client
+import sys
+from tkinter import Button
+from pygame.examples.sprite_texture import win
+import time
 import json
 from pygame import gfxdraw
 import pygame
@@ -19,7 +24,15 @@ HOST = '127.0.0.1'
 pygame.init()
 
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
+pygame.display.set_caption("Pokemon Game!")
+# icon
+icon = pygame.image.load('pikachu.png')
+pygame.display.set_icon(icon)
+# background
+background = pygame.image.load('background.jpg')
+background = pygame.transform.scale2x(background)
 
+demo_screen = screen.copy()
 clock = pygame.time.Clock()
 pygame.font.init()
 
@@ -50,6 +63,35 @@ max_x = max(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
 max_y = max(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
 
 
+class button:
+    def __init__(self, colorB, x, y, width, height, text=''):
+        self.colorB = colorB
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+
+    def draw(self, screen, outline=None):
+        colorB = self.colorB
+        if outline:
+            pygame.draw.rect(screen, outline, (self.x - 2, self.y - 2, self.width + 4, self.height + 4), 0)
+        pygame.draw.rect(screen, colorB, (self.x, self.y, self.width, self.height), 0)
+
+        if self.text != '':
+            font = pygame.font.SysFont('Ariel', 20)
+            text = font.render(self.text, 1, (0, 0, 0))
+            screen.blit(text, (
+                self.x + (self.width / 2 - text.get_width() / 2), self.y + (self.height / 2 - text.get_height() / 2)))
+
+    def isOver(self, pos):
+        if self.x < pos[0] < self.x + self.width:
+            if self.y < pos[1] < self.y + self.height:
+                return True
+
+            return False
+
+
 def scale(data, min_screen, max_screen, min_data, max_data):
     """
     get the scaled data with proportions min_data, max_data
@@ -70,9 +112,9 @@ def my_scale(data, x=False, y=False):
 radius = 15
 
 client.add_agent("{\"id\":0}")
-# client.add_agent("{\"id\":1}")
-# client.add_agent("{\"id\":2}")
-# client.add_agent("{\"id\":3}")
+client.add_agent("{\"id\":1}")
+client.add_agent("{\"id\":2}")
+client.add_agent("{\"id\":3}")
 
 # this commnad starts the server - the game is running now
 client.start()
@@ -82,6 +124,15 @@ The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
 
+def redrawWindow():
+    stopButton.draw(screen, (0, 0, 0))
+    levelButton.draw(screen, (0, 0, 0))
+    timeButton.draw(screen, (0, 0, 0))
+
+data = json.loads(client.get_info())["GameServer"]
+levelButton = button((128, 128, 128), 20, 20, 85, 40, 'LEVEL: ' + str(data["game_level"]))
+timeButton = button((128, 128, 128), 20, 65, 85, 40, 'TIME: ' + str(int(float(client.time_to_end()) / 1000)))
+stopButton = button((128, 128, 128), 20, 110, 85, 40, 'STOP GAME')
 
 def load_pokemon(pok: str):
     J = json.loads(pok)
@@ -115,6 +166,8 @@ poke = client.get_pokemons()
 listPok = load_pokemon(poke)
 
 while client.is_running() == 'true':
+    redrawWindow()
+    pygame.display.update()
     pokeList = json.loads(client.get_pokemons(),
                           object_hook=lambda d: SimpleNamespace(**d)).Pokemons
     pokeList = [p.Pokemon for p in pokeList]
@@ -131,12 +184,25 @@ while client.is_running() == 'true':
             float(x), x=True), y=my_scale(float(y), y=True))
     # check events
     for event in pygame.event.get():
+        pos = pygame.mouse.get_pos()
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
 
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if stopButton.isOver(mouse.get_pos()):
+                pygame.quit()
+                exit(0)
+        if event.type == pygame.MOUSEMOTION:
+            if stopButton.isOver(pos):
+                stopButton.colorB = (255, 255, 255)
+            else:
+                stopButton.colorB = (128, 128, 128)
+
     # refresh surface
     screen.fill(Color(0, 0, 0))
+    screen.blit(background, (0, 0))
+    stopButton.draw(screen)
 
     # draw nodes
     for n in graph.Nodes:
@@ -172,14 +238,17 @@ while client.is_running() == 'true':
 
     # draw agents
     for agent in agents:
-        pygame.draw.circle(screen, Color(122, 61, 23),
-                           (int(agent.pos.x), int(agent.pos.y)), 10)
-    # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
+        iconAgent = pygame.image.load('agent.png')
+        iconAgent = pygame.transform.scale(iconAgent, (30, 30))
+        iconAgentX = agent.pos.x - 10
+        iconAgentY = agent.pos.y - 10
+        screen.blit(iconAgent, (iconAgentX, iconAgentY))
     for p in pokeList:
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos.x), int(p.pos.y)), 10)
-
-    # update screen changes
-    display.update()
+        iconPok = pygame.image.load('pokeball.png')
+        iconPok = pygame.transform.scale(iconPok, (30, 30))
+        iconPokX = p.pos.x - 10
+        iconPokY = p.pos.y - 10
+        screen.blit(iconPok, (iconPokX, iconPokY))
 
     # refresh rate
     clock.tick(60)
