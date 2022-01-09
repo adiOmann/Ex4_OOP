@@ -23,8 +23,8 @@ from client_python.GraphAlgo import GraphAlgo
 
 class myGame:
 
-    def __init__(self,pokemon : pokemons ,is_l :bool , moves : int , grade : int, level:int ,max_user : int ,id :int, graph:DiGraph , agents: int)
-        j = json.loads()
+    def __init__(self, json_str: str):
+        j = json.loads(json_str)['GameServer']
 
         self.pokemon = j['pokemons']
         self.is_l = j['is_l']
@@ -35,42 +35,59 @@ class myGame:
         self.id = j['id']
         self.graph_j = j['graph']
         self.graph = DiGraph()
-        self.graph = GraphAlgo.load_from_json("../" + self.graph_j)
+        self.load_from_string_json("../" + self.graph_j)
         self.agents = j['agents']
 
+    def load_from_string_json(self, guistr: str) -> bool:
+        with open(guistr, 'r') as file:
+            J = json.loads(guistr)
+            ListNode = J['Nodes']
+            ListEdge = J['Edges']
+            g = DiGraph()
+        for n in ListNode:
+            try:
+                pos = n['pos']
+                pos = tuple(pos.split(','))
+                pos = (x, y, 0.0)
+
+            except Exception:
+                x = random.uniform(35.19, 35.22)
+                y = random.uniform(32.05, 32.22)
+                pos = (x, y, 0.0)
+            self.graph.add_node(n['id'], pos)
+
+        for e in ListEdge:
+            self.graph.add_edge(e['src'], e['dest'], e['w'])
+        return True
+
+    def load_pokemon(pokemons):
+        J = json.loads(pokemons)
+        ListPokemon = J['pokemon']
+        for n in ListPokemon:
+            try:
+                value = n['value']
+                type = n['type']
+                pos = n['pos']
+                pos = tuple(pos.split(','))
+
+            except Exception:
+                x = random.uniform(35.19, 35.22)
+                y = random.uniform(32.05, 32.22)
+                pos = (x, y, 0.0)
+                type = 0
+                value = 0
+        return True
+
+    def algo(self,):
+        nodelist = DiGraph.NodeDict
+        for n in nodelist:
+            plus = 1
+            src = n
+            dest = plus
+            plus = plus+1
+            GraphAlgo.shortest_path(src, dest)
 
 
-def get_pokemons(pokemons):
-    J = json.loads(pokemons)
-    ListPokemon = J['pokemon']
-    for n in ListPokemon:
-        try:
-            value = n['value']
-            type = n['type']
-            pos = n['pos']
-            pos = tuple(pos.split(','))
 
-        except Exception:
-            x = random.uniform(35.19, 35.22)
-            y = random.uniform(32.05, 32.22)
-            pos = (x, y, 0.0)
-            type = 0
-            value = 0
-    return True
-
-
-    # # choose next edge
-    # for agent in agents:
-    #     graphString = client.get_graph()
-    #     myGraph = GraphAlgo()
-    #     myGraph.load_from_string(graphString)
-    #
-    #     # if agent.dest == -1:
-    #     #     next_node = (agent.src - 1) % len(graph.Nodes)
-    #     #     client.choose_next_edge(
-    #     #         '{"agent_id":'+str(agent.id)+', "next_node_id":'+str(next_node)+'}')
-    #     ttl = client.time_to_end()
-    #     print(ttl, client.get_info())
-
-    #client.move()
+    # client.move()
 # game over:

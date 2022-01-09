@@ -5,6 +5,7 @@ class agent:
         self.src = src
         self.dest = dest
         self.pos = pos
+        self.listA = []
 
     def getId(self):
         return self.id

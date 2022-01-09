@@ -1,14 +1,11 @@
-"""
-@author AchiyaZigi
-OOP - Ex4
-Very simple GUI example for python client to communicates with the server and "play the game!"
-"""
+import random
 from types import SimpleNamespace
 from client import Client
 import json
 from pygame import gfxdraw
 import pygame
 from pygame import *
+import pokemons
 
 # init pygame
 from client_python.GraphAlgo import GraphAlgo
@@ -19,20 +16,20 @@ WIDTH, HEIGHT = 1080, 720
 PORT = 6666
 # server host (default localhost 127.0.0.1)
 HOST = '127.0.0.1'
-#HOST='109.67.185.130'
 pygame.init()
 
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
+
 clock = pygame.time.Clock()
 pygame.font.init()
 
 client = Client()
 client.start_connection(HOST, PORT)
 
-pokemons = client.get_pokemons()
-pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
+pokeList = client.get_pokemons()
+pokemons_obj = json.loads(pokeList, object_hook=lambda d: SimpleNamespace(**d))
 
-print(pokemons)
+# print(pokemons)
 
 graph_json = client.get_graph()
 
@@ -46,7 +43,7 @@ for n in graph.Nodes:
     x, y, _ = n.pos.split(',')
     n.pos = SimpleNamespace(x=float(x), y=float(y))
 
- # get data proportions
+# get data proportions
 min_x = min(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
 min_y = min(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
 max_x = max(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
@@ -57,9 +54,8 @@ def scale(data, min_screen, max_screen, min_data, max_data):
     """
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
-
     """
-    return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
+    return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
@@ -68,15 +64,15 @@ def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
-        return scale(data, 50, screen.get_height()-50, min_y, max_y)
+        return scale(data, 50, screen.get_height() - 50, min_y, max_y)
 
 
 radius = 15
 
 client.add_agent("{\"id\":0}")
-client.add_agent("{\"id\":1}")
-client.add_agent("{\"id\":2}")
-client.add_agent("{\"id\":3}")
+# client.add_agent("{\"id\":1}")
+# client.add_agent("{\"id\":2}")
+# client.add_agent("{\"id\":3}")
 
 # this commnad starts the server - the game is running now
 client.start()
@@ -86,11 +82,43 @@ The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
 
+
+def load_pokemon(pok: str):
+    J = json.loads(pok)
+    ListPokemon = J['Pokemons']
+    pokList = []
+    for m in ListPokemon:
+        try:
+            poko = m['Pokemon']
+            value = poko['value']
+            type = poko['type']
+            pos = poko['pos']
+            pos = tuple(pos.split(','))
+            P = pokemons.pokemon(value, type, pos)
+            pokList.append(P)
+
+        except Exception:
+            x = random.uniform(35.19, 35.22)
+            y = random.uniform(32.05, 32.22)
+            pos = (x, y, 0.0)
+            type = 0
+            value = 0
+
+    return pokList
+
+
+i = 0
+graphString = client.get_graph()
+myGraph = GraphAlgo()
+myGraph.load_from_string_json(graphString)
+poke = client.get_pokemons()
+listPok = load_pokemon(poke)
+
 while client.is_running() == 'true':
-    pokemons = json.loads(client.get_pokemons(),
+    pokeList = json.loads(client.get_pokemons(),
                           object_hook=lambda d: SimpleNamespace(**d)).Pokemons
-    pokemons = [p.Pokemon for p in pokemons]
-    for p in pokemons:
+    pokeList = [p.Pokemon for p in pokeList]
+    for p in pokeList:
         x, y, _ = p.pos.split(',')
         p.pos = SimpleNamespace(x=my_scale(
             float(x), x=True), y=my_scale(float(y), y=True))
@@ -147,7 +175,7 @@ while client.is_running() == 'true':
         pygame.draw.circle(screen, Color(122, 61, 23),
                            (int(agent.pos.x), int(agent.pos.y)), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
-    for p in pokemons:
+    for p in pokeList:
         pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos.x), int(p.pos.y)), 10)
 
     # update screen changes
@@ -158,16 +186,29 @@ while client.is_running() == 'true':
 
     # choose next edge
     for agent in agents:
-        graphString = client.get_graph()
-        myGraph = GraphAlgo()
-        myGraph.load_from_string_json(graphString)
+        if agent.dest == -1 and len(listPok) > i:
+            # n = myGraph.graph.all_in_edges_of_node(agent.src)  # return the all neighbors
+            # n = list(n.keys())
+            # # next_node = (agent.src - 1) % len(graph.Nodes)
+            # next_node = random.choice(n)
+            # return list of pokemons
+            # we take the pos
+            # while i<len(listPok):
+            pokePos = listPok[i].getPos()
+            dest = myGraph.closest(float(pokePos[0]), float(pokePos[1]))  # Where we send the agent
+            sp = myGraph.shortest_path(agent.src, dest)  # find the shortest way to the dest
+            if (len(sp[1]) > 1):
+                next_node = sp[1][1]
+                client.choose_next_edge(
+                    '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_node) + '}')
+            else:
+                # next_node = sp[1][0]
+                # client.choose_next_edge(
+                #    '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_node) + '}')
+                i = i + 1
 
-        if agent.dest == -1:
-            next_node = (agent.src - 1) % len(graph.Nodes)
-            client.choose_next_edge(
-                '{"agent_id":'+str(agent.id)+', "next_node_id":'+str(next_node)+'}')
-            ttl = client.time_to_end()
-            print(ttl, client.get_info())
-
+    ttl = client.time_to_end()
+    print(ttl, client.get_info())
     client.move()
+    # display.update()
 # game over:

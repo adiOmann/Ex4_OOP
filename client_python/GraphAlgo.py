@@ -15,7 +15,7 @@ from client_python.GraphAlgoInterface import GraphAlgoInterface
 
 class GraphAlgo(GraphAlgoInterface):
 
-    def _init_(self, g: GraphInterface = None):
+    def __init__(self, g: GraphInterface = None):
         self.graph = g
         self.INF = float('inf')
 
@@ -52,33 +52,33 @@ class GraphAlgo(GraphAlgoInterface):
         self.graph = g
         return True
 
-    # def load_from_string_json(self, guistr:str) -> bool:
-    #     #with open(string, 'r') as file:
-    #     J = json.loads(guistr)
-    #     ListNode = J['Nodes']
-    #     ListEdge = J['Edges']
-    #     g = DiGraph()
-    #     for n in ListNode:
-    #         try:
-    #             pos = n['pos']
-    #             pos = tuple(pos.split(','))
     #
-    #         except Exception:
-    #             x = random.uniform(35.19, 35.22)
-    #             y = random.uniform(32.05, 32.22)
-    #             pos = (x, y, 0.0)
-    #         no = Node(Id=n['id'], pos=pos)
-    #         i = no.get_id()
-        
-    #         g.add_node(i, pos)
-    #         # self.graph.add_node(n['id'], pos)
-    #
-    #     for e in ListEdge:
-    #         ed = Edge(src=e['src'], dest=e["dest"], weight=e['w'])
-    #         s = ed.getSrc()
-    #         d = ed.getDest()
-    #         w = ed.getWeight()
-    #         g.add_edge(s, d, w)
+    def load_from_string_json(self, guistr: str) -> bool:
+        J = json.loads(guistr)
+        ListNode = J['Nodes']
+        ListEdge = J['Edges']
+        g = DiGraph()
+        for n in ListNode:
+            try:
+                pos = n['pos']
+                pos = tuple(pos.split(','))
+
+            except Exception:
+                x = random.uniform(35.19, 35.22)
+                y = random.uniform(32.05, 32.22)
+                pos = (x, y, 0.0)
+            no = Node(Id=n['id'], pos=pos)
+            i = no.get_id()
+
+            g.add_node(i, pos)
+            # self.graph.add_node(n['id'], pos)
+
+        for e in ListEdge:
+            ed = Edge(src=e['src'], dest=e["dest"], weight=e['w'])
+            s = ed.getSrc()
+            d = ed.getDest()
+            w = ed.getWeight()
+            g.add_edge(s, d, w)
 
         self.graph = g
         return True
@@ -209,6 +209,19 @@ class GraphAlgo(GraphAlgoInterface):
         plt.title("Graph plot")
         plt.scatter(x, y, c='red')
         plt.show()
+
+    def dist(self, x1, y1, x2, y2):
+        return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
+
+    def closest(self, x, y) -> int:
+        minNode = list(self.graph.NodeDict.keys())[0]
+        minDist = math.inf
+        for key, item in self.graph.NodeDict.items():
+            d = self.dist(float(item.pos[0]), float(item.pos[1]), x, y)
+            if (d < minDist):
+                minDist = d
+                minNode = key
+        return minNode
 
 
 if __name__ == '__main__':
