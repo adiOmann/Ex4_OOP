@@ -49,6 +49,10 @@ From this class, we call the surver to find the most effective route from the ag
 
 
 
+
+https://user-images.githubusercontent.com/94624875/148789219-75b38360-904f-4443-af81-73275ea54e01.mp4
+
+
 ## How to run the game
 * At the terminal: <java -jar Ex4_Server_v0.0.jar 0> (instead of 0 put any level you want to run). <br />
 * run the "student_code" at the project.
