@@ -19,9 +19,9 @@ In this class we add the next functions:
 This class represents the server.
 ### student_code
 This class contains the GUI and the main function that run the game. <br />
-The GUI contains the directed graph route - edges, nodes, agents and Pokemons. <br />
+The GUI contains the directed graph route - edges, nodes, agents and pokemons. <br />
 In addition, there is a stop button to stop the game, 
-and buttons that show the level of the game and the duration of the current stage.
+and buttons that show the level of the game and the time from start of the game.
 ### agent:
 * ID
 * Value
