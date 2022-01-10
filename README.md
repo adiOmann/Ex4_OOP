@@ -44,10 +44,6 @@ From this class, we call the surver to find the most effective route from the ag
 * Type
 
 ## Our GUI
-![image](https://github.com/adiOmann/Ex4_OOP/blob/master/GUI.jpeg)
-
-
-
 
 
 
