@@ -263,7 +263,7 @@ while client.is_running() == 'true':
             # return list of pokemons
             # we take the pos
             # while i<len(listPok):
-            pokePos = listPok[i].getPos()
+            pokePos = listPok[i].getPos()    # Returns the position of one Pokemon at a time
             dest = myGraph.closest(float(pokePos[0]), float(pokePos[1]))  # Where we send the agent
             sp = myGraph.shortest_path(agent.src, dest)  # find the shortest way to the dest
             if (len(sp[1]) > 1):

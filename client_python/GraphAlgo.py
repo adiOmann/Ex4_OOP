@@ -210,9 +210,11 @@ class GraphAlgo(GraphAlgoInterface):
         plt.scatter(x, y, c='red')
         plt.show()
 
+    # Calculates distance between 2 points
     def dist(self, x1, y1, x2, y2):
         return math.sqrt(math.pow(x1 - x2, 2) + math.pow(y1 - y2, 2))
 
+    # Returns the nearest vertex to the Pokemon(the id)
     def closest(self, x, y) -> int:
         minNode = list(self.graph.NodeDict.keys())[0]
         minDist = math.inf
