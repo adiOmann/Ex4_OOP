@@ -1,33 +1,40 @@
-import random
-
-from types import SimpleNamespace
-from client import Client
-import sys
-from tkinter import Button
-from pygame.examples.sprite_texture import win
-import time
+"""
+@author AchiyaZigi
+OOP - Ex4
+Very simple GUI examples for python client to communicates with the server and "play the game!"
+"""
 import json
-from pygame import gfxdraw
+import random
+from types import SimpleNamespace
 import pygame
 from pygame import *
-import pokemons
-
-# init pygame
+from pygame import gfxdraw
+from client import Client
+from client_python import pokemons
 from client_python.GraphAlgo import GraphAlgo
+from client_python.pokemons import pokemon
 
 WIDTH, HEIGHT = 1080, 720
 
 # default port
 PORT = 6666
+
 # server host (default localhost 127.0.0.1)
 HOST = '127.0.0.1'
+
+# init pygame
 pygame.init()
 
+# screen
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
+
+# caption
 pygame.display.set_caption("Pokemon Game!")
+
 # icon
 icon = pygame.image.load('pikachu.png')
 pygame.display.set_icon(icon)
+
 # background
 background = pygame.image.load('background.jpg')
 background = pygame.transform.scale2x(background)
@@ -35,23 +42,19 @@ background = pygame.transform.scale2x(background)
 demo_screen = screen.copy()
 clock = pygame.time.Clock()
 pygame.font.init()
-
 client = Client()
 client.start_connection(HOST, PORT)
-
 pokeList = client.get_pokemons()
 pokemons_obj = json.loads(pokeList, object_hook=lambda d: SimpleNamespace(**d))
-
-# print(pokemons)
-
+print(pokeList)
 graph_json = client.get_graph()
+radius = 15
 
-FONT = pygame.font.SysFont('Arial', 20, bold=True)
+# font
+FONT = pygame.font.SysFont('Arial', 15, bold=True)
+
 # load the json string into SimpleNamespace Object
-
-graph = json.loads(
-    graph_json, object_hook=lambda json_dict: SimpleNamespace(**json_dict))
-
+graph = json.loads(graph_json, object_hook=lambda json_dict: SimpleNamespace(**json_dict))
 for n in graph.Nodes:
     x, y, _ = n.pos.split(',')
     n.pos = SimpleNamespace(x=float(x), y=float(y))
@@ -93,15 +96,10 @@ class button:
 
 
 def scale(data, min_screen, max_screen, min_data, max_data):
-    """
-    get the scaled data with proportions min_data, max_data
-    relative to min and max screen dimentions
-    """
     return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
-
 def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
@@ -109,30 +107,24 @@ def my_scale(data, x=False, y=False):
         return scale(data, 50, screen.get_height() - 50, min_y, max_y)
 
 
-radius = 15
-
 client.add_agent("{\"id\":0}")
 client.add_agent("{\"id\":1}")
 client.add_agent("{\"id\":2}")
 client.add_agent("{\"id\":3}")
 
-# this commnad starts the server - the game is running now
+# this command starts the server - the game is running now
 client.start()
 
-"""
-The code below should be improved significantly:
-The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
-"""
 
 def redrawWindow():
     stopButton.draw(screen, (0, 0, 0))
     levelButton.draw(screen, (0, 0, 0))
-    timeButton.draw(screen, (0, 0, 0))
+
 
 data = json.loads(client.get_info())["GameServer"]
 levelButton = button((128, 128, 128), 20, 20, 85, 40, 'LEVEL: ' + str(data["game_level"]))
-timeButton = button((128, 128, 128), 20, 65, 85, 40, 'TIME: ' + str(int(float(client.time_to_end()) / 1000)))
-stopButton = button((128, 128, 128), 20, 110, 85, 40, 'STOP GAME')
+stopButton = button((255, 0, 0), 980, 20, 85, 40, 'STOP GAME')
+
 
 def load_pokemon(pok: str):
     J = json.loads(pok)
@@ -156,8 +148,6 @@ def load_pokemon(pok: str):
             value = 0
 
     return pokList
-
-
 i = 0
 graphString = client.get_graph()
 myGraph = GraphAlgo()
@@ -168,27 +158,23 @@ listPok = load_pokemon(poke)
 while client.is_running() == 'true':
     redrawWindow()
     pygame.display.update()
-    pokeList = json.loads(client.get_pokemons(),
-                          object_hook=lambda d: SimpleNamespace(**d)).Pokemons
+    pokeList = json.loads(client.get_pokemons(), object_hook=lambda d: SimpleNamespace(**d)).Pokemons
     pokeList = [p.Pokemon for p in pokeList]
     for p in pokeList:
         x, y, _ = p.pos.split(',')
-        p.pos = SimpleNamespace(x=my_scale(
-            float(x), x=True), y=my_scale(float(y), y=True))
-    agents = json.loads(client.get_agents(),
-                        object_hook=lambda d: SimpleNamespace(**d)).Agents
+        p.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
+    agents = json.loads(client.get_agents(), object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
     for a in agents:
         x, y, _ = a.pos.split(',')
-        a.pos = SimpleNamespace(x=my_scale(
-            float(x), x=True), y=my_scale(float(y), y=True))
+        a.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
+
     # check events
     for event in pygame.event.get():
         pos = pygame.mouse.get_pos()
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
-
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if stopButton.isOver(mouse.get_pos()):
                 pygame.quit()
@@ -197,7 +183,7 @@ while client.is_running() == 'true':
             if stopButton.isOver(pos):
                 stopButton.colorB = (255, 255, 255)
             else:
-                stopButton.colorB = (128, 128, 128)
+                stopButton.colorB = (255, 0, 0)
 
     # refresh surface
     screen.fill(Color(0, 0, 0))
@@ -209,14 +195,12 @@ while client.is_running() == 'true':
         x = my_scale(n.pos.x, x=True)
         y = my_scale(n.pos.y, y=True)
 
-        # its just to get a nice antialiased circle
-        gfxdraw.filled_circle(screen, int(x), int(y),
-                              radius, Color(64, 80, 174))
-        gfxdraw.aacircle(screen, int(x), int(y),
-                         radius, Color(255, 255, 255))
+        # It's just to get a nice antialiasing circle
+        gfxdraw.filled_circle(screen, int(x), int(y), radius, Color(236, 247, 40))  # change the color of the node
+        gfxdraw.aacircle(screen, int(x), int(y), radius, Color(0, 0, 0))  # change the color of the frame's node
 
         # draw the node id
-        id_srf = FONT.render(str(n.id), True, Color(255, 255, 255))
+        id_srf = FONT.render(str(n.id), True, Color(0, 0, 0))  # change the color of node id
         rect = id_srf.get_rect(center=(x, y))
         screen.blit(id_srf, rect)
 
@@ -233,8 +217,7 @@ while client.is_running() == 'true':
         dest_y = my_scale(dest.pos.y, y=True)
 
         # draw the line
-        pygame.draw.line(screen, Color(61, 72, 126),
-                         (src_x, src_y), (dest_x, dest_y))
+        pygame.draw.line(screen, Color(0, 0, 0), (src_x, src_y), (dest_x, dest_y))  # change the color of the edge
 
     # draw agents
     for agent in agents:
@@ -243,14 +226,24 @@ while client.is_running() == 'true':
         iconAgentX = agent.pos.x - 10
         iconAgentY = agent.pos.y - 10
         screen.blit(iconAgent, (iconAgentX, iconAgentY))
+
+    # draw pokemon
     for p in pokeList:
+        # represent pokemon
         iconPok = pygame.image.load('pokeball.png')
         iconPok = pygame.transform.scale(iconPok, (30, 30))
         iconPokX = p.pos.x - 10
         iconPokY = p.pos.y - 10
         screen.blit(iconPok, (iconPokX, iconPokY))
 
+        # print value of each pokemon
+        font_value = pygame.font.SysFont('Arial', 20, bold=True)
+        valPok = font_value.render(str(pokemon.getValue(p)), True, (0, 0, 0))
+        screen.blit(valPok, (iconPokX + 10, iconPokY - 30))
+
     # refresh rate
+    timeButton = button((128, 128, 128), 20, 65, 85, 40, 'TIME: ' + str(int(pygame.time.get_ticks() / 1000)))
+    timeButton.draw(screen, (0, 0, 0))
     clock.tick(60)
 
     # choose next edge
@@ -263,7 +256,7 @@ while client.is_running() == 'true':
             # return list of pokemons
             # we take the pos
             # while i<len(listPok):
-            pokePos = listPok[i].getPos()    # Returns the position of one Pokemon at a time
+            pokePos = listPok[i].getPos()  # Returns the position of one Pokemon at a time
             dest = myGraph.closest(float(pokePos[0]), float(pokePos[1]))  # Where we send the agent
             sp = myGraph.shortest_path(agent.src, dest)  # find the shortest way to the dest
             if (len(sp[1]) > 1):
@@ -281,3 +274,4 @@ while client.is_running() == 'true':
     client.move()
     # display.update()
 # game over:
+
