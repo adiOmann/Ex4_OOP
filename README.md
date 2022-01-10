@@ -8,6 +8,8 @@ When agent eating a Pokemon, another Pokemon is created, and the game ends when 
 
 ![image](https://github.com/adiOmann/Ex4_OOP/blob/master/1200px-International_Pok%C3%A9mon_logo.svg.png)
 
+Our code is based on the writing classes in the previous assignment (ex3): DiDraph and GraphAlgo
+
 ## client_python
 ### Classes fron OOP_Ex3
 #### DiGraph
@@ -17,9 +19,9 @@ In this class we add the next functions:
 #### GraphAlgo
 We used in the function:
 * shortestPath - this method find the short route between 2 nodes.
-#### GraphInterface
-#### GraphAlgoInterface
-### New Classes
+#### GraphInterface and GraphAlgoInterface 
+the intterfaces
+## New Classes
 #### client
 This class represents the server.
 #### student_code
